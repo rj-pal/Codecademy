@@ -2,9 +2,6 @@
 .ipynb_checkpoints
 __pycache__
 
-# the below project is in progress
-# US-medical-insurance-costs/
 US-medical-insurance-costs
-# ignore any solution directories or notebooks
-*solution*
+python-portfolio-example-solution
 
