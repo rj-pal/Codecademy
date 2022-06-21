@@ -4,22 +4,22 @@ from pandas import merge
 
 # Two functions below default to column 'question' but can be used with any name for the question column in the jeopardy data base
 
-def keyword_string_filter(data, words, col_name='question' ):
+def keyword_string_filter(data, words):
     """Returns a Pandas Series of boolean values for the word list filter regardless of letter case and any word string that matches"""
     words_filter = lambda question: all(word.lower() in question.lower() for word in words)
     
-    filtered_series = data.question.apply(words_filter)
+    filtered_series = data.iloc[:, 5].apply(words_filter)
 
     return filtered_series
 
 
-def keyword_filter(data, words, col_name='question'):
+def keyword_filter(data, words):
     """Returns Pandas Seris of word list filter regardless of letter case with exact matches only. Default col_name to question"""        
     question_words = lambda question: (q_word.lower() for q_word in question.split())
     
     words_filter = lambda function: lambda question: all(word.lower() in function(question) for word in words)
     
-    filtered_series = data[col_name].apply(words_filter(question_words))
+    filtered_series = data.iloc[:, 5].apply(words_filter(question_words))
     
     return filtered_series
 
@@ -44,8 +44,7 @@ def add_float_value_column(data, new_col_name='new_value'):
     """Returns a new data frame with a new column of the Jeopardy dollar value column as type Float"""
     col_filter = lambda value: 0 if value == 'None' else float(value.lstrip('$').replace(',', ''))
     new_col = data.iloc[:, 4].apply(col_filter)
-    data[new_col_name] = new_col
-    
+    data[new_col_name] = new_col    
     
 
 def add_datetime_decades_columns(data, new_col_name='decade'):
@@ -57,23 +56,10 @@ def add_datetime_decades_columns(data, new_col_name='decade'):
     decade_filter = lambda year: int(year//10 * 10)
     decade = data.air_date.dt.year.apply(decade_filter)
     data[new_col_name] = decade
-
-    
-def column_data(data, word_filter, col_name='decade'):
-    filtered_data = filtered_df(data, word_filter)
-    
-    col_counts = data.groupby(col_name).show_number.count()
-
-    
-    new_data = filtered_data.groupby(col_name)['show_number'].count().reset_index()
-    percentage = lambda row: row['show_number']/col_counts[row[col_name]]*100
-    new_col_name = 'as_percentage_of_' + col_name
-    new_data[new_col_name] = new_data.apply(percentage, axis=1)
-    
-    return new_data
     
 
 def show_number_filtered_data(data, word_filter, col_name='decade'):
+    """Returns a summary statistics data frame of the number of shows aggregated by any column or field and filtered by keywords."""
     if type(word_filter) is str:
         word_filter = word_filter.split()
         
@@ -94,7 +80,22 @@ def show_number_filtered_data(data, word_filter, col_name='decade'):
     
     
     return new_data
+
+
+# Can be used to obtain on the show number counts and percentage of decade only- original summary function   
+def column_data(data, word_filter):
+    """Returns a new data frame aggregated by decade with summary stats for the number of shows"""
+    filtered_data = filtered_df(data, word_filter)
     
+    col_counts = data.groupby('decade').show_number.count()
+
+    
+    new_data = filtered_data.groupby('decade')['show_number'].count().reset_index()
+    percentage = lambda row: row['show_number']/col_counts[row[col_name]]*100
+    new_data['as_percentage_of_decade'] = new_data.apply(percentage, axis=1)
+    
+    return new_data
+
 
 def answer_frequency(data, col_name='answer'):
     """Return a Pandas Series of the frequency of answers for any Jeopardy Data Frame"""
@@ -102,8 +103,9 @@ def answer_frequency(data, col_name='answer'):
     return data[col_name].value_counts()
 
 
-
+# the following three functions work together to run a quiz program for the user
 def play_jeopardy(data, rounds=5):
+    """Starts an interactive quiz set to the number of rounds. Shows randomly selected questions and takes user input for the answers."""
     add_float_value_column(data)
     total_score = 0
     number = 0
@@ -122,8 +124,8 @@ def play_jeopardy(data, rounds=5):
     print("Winnings:", total_score)
 
           
-
 def random_question(data):
+    """Returns a random question with the relevant information for the quiz function."""
     first = 0
     last = data.shape[0] - 1
     number = randint(a=first, b=last)
@@ -132,6 +134,7 @@ def random_question(data):
 
 
 def quiz(data):
+    """Provides a random question and takes an answer from the user and checks if the answer is correct. Returns the dollar value of the question."""
     j_round, cat, val, quest, ans, score = random_question(data)
     print("Round:", j_round)
     print("Category:", cat)
@@ -159,7 +162,7 @@ def quiz(data):
             new_ans_list = []
             for a in ans_list:
                 if a != '&':
-                    new_ans_list.append(a.lower())
+                    new_ans_list.append(a.lower().replace(',', ''))
             
             response = all(word in new_ans_list for word in answer_words)
                     
@@ -179,7 +182,7 @@ def quiz(data):
         return 0
         
 if __name__ == "__main__":
-    from pandas import DataFrame, read_csv
+    from pandas import read_csv
     
     data = read_csv('jeopardy.csv')
     play_jeopardy(data)
