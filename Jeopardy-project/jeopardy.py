@@ -54,7 +54,7 @@ def add_datetime_decades_columns(data, new_col_name='decade'):
     dt_air_date = data.iloc[:, 1].apply(dt_converter)
     data.iloc[:, 1] = dt_air_date
     decade_filter = lambda year: int(year//10 * 10)
-    decade = data.air_date.dt.year.apply(decade_filter)
+    decade = data.iloc[:, 1].dt.year.apply(decade_filter)
     data[new_col_name] = decade
     
 
@@ -85,14 +85,15 @@ def show_number_filtered_data(data, word_filter, col_name='decade'):
 # Can be used to obtain on the show number counts and percentage of decade only- original summary function   
 def column_data(data, word_filter):
     """Returns a new data frame aggregated by decade with summary stats for the number of shows"""
+    add_datetime_decades_columns(data, new_col_name='Decade')
     filtered_data = filtered_df(data, word_filter)
     
-    col_counts = data.groupby('decade').show_number.count()
+    col_counts = data.groupby('Decade')['Show Number'].count()
 
     
-    new_data = filtered_data.groupby('decade')['show_number'].count().reset_index()
-    percentage = lambda row: row['show_number']/col_counts[row[col_name]]*100
-    new_data['as_percentage_of_decade'] = new_data.apply(percentage, axis=1)
+    new_data = filtered_data.groupby('Decade')['Show Number'].count().reset_index()
+    percentage = lambda row: row['Show Number']/col_counts[row['Decade']]*100
+    new_data['Percentage of Decade'] = new_data.apply(percentage, axis=1)
     
     return new_data
 
