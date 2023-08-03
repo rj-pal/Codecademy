@@ -1,6 +1,6 @@
 # Codecadmy Project Files
 
-This directory contains files pertaining to the Codecademy Data Scientist Machine Learning Specialist and will be kept in chronological order. 
+This directory contains files pertaining to the Codecademy Data Scientist Machine Learning Specialist. I have added some documentation below explaining some of my code on the python coding projects. This directory has been updated recently to include some Jupyter notebooks with exploratory EDA.
 
 1. **Jeopardy-project**- this directory contains an analysis of the 
 jeopardy 
