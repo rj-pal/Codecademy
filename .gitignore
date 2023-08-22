@@ -5,8 +5,7 @@ __pycache__
 *[sS]olution*
 # ignore all rough work notebooks
 *rough*
-# project in progress
-US-medical-insurance-costs
-
+# project in progress - now started ignore the data file
+US-medical-insurance-costs/insurance.csv
 # python-portfolio-example-solution
 
